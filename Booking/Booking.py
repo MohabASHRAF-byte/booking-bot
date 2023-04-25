@@ -1,5 +1,6 @@
 import Booking.constants as const
 from Booking.filtration import Filters
+from Booking.scraping import Scrap
 from selenium import webdriver
 import os
 from selenium.webdriver.common.by import By
@@ -7,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import datetime
+from prettytable import PrettyTable
 
 
 class Booking(webdriver.Chrome):
@@ -153,20 +155,16 @@ class Booking(webdriver.Chrome):
         btn = self.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
         btn.click()
 
-    def test(self):
-        sleep(3)
-        check_in_elements = self.find_elements(By.CSS_SELECTOR, f'span[role="checkbox"]')
-        for _ in check_in_elements:
-            if _.get_attribute('data-date') == '2023-05-06':
-                _.click()
-                break
-            print(_.get_attribute('data-date'))
-        # check_in_element.click()
-        print('done')
-
-    #
     def apply_filtrations(self):
         ob = Filters(self)
-        ob.star_rating(0)
-        sleep(3)
+        ob.star_rating(5)
+        sleep(10)
         ob.lower_price_first()
+
+    def get_data(self):
+        ob = Scrap(driver=self)
+        res_table,cnt = ob.get_values()
+        table = PrettyTable(field_names=["index", "Hotel Name", "Price", "Score"])
+        table.add_rows(res_table)
+        print(f'{cnt} results')
+        print(table)
