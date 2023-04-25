@@ -42,8 +42,6 @@ class Booking(webdriver.Chrome):
             print("no add ..!")
 
     def choose_currency(self, currency=None):
-        if not (currency is None):
-            currency = currency.upper()
         menu_btn = WebDriverWait(self, 15).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="header-currency-picker-trigger"]'))
         )
@@ -62,15 +60,17 @@ class Booking(webdriver.Chrome):
     def choose_destinations(self, destination="New York"):
         input_txt = self.find_element(By.ID, ':Ra9:')
         input_txt.send_keys(destination)
-        sleep(1)
+        sleep(3)
         select_btn = self.find_element(By.CLASS_NAME, 'cd1e09fdfe')
         select_btn.click()
 
-    def set_dates(self, checkIn='2023-05-06', checkOut='2023-05-26'):
+    def set_dates(self, checkIn, checkOut):
         sleep(1)
         # store checkin && check out date in variables
         checkIn_set = checkIn
         checkOut_set = checkOut
+        # checkIn = str(checkIn)
+        # checkOut = str(checkOut)
         # create list contain dates as a numbers
         checkIn = [int(ii) for ii in checkIn.split('-')]
         checkOut = [int(ii) for ii in checkOut.split('-')]
@@ -115,25 +115,25 @@ class Booking(webdriver.Chrome):
     def set_adults(self, num):
         buttons = self.find_elements(By.CSS_SELECTOR, 'button[type="button"]')
         buttons[6].click()
-        for i in range(num - 1):
+        for i in range(int(num) - 1):
             buttons[7].click()
             sleep(.5)
 
     def set_children(self, num):
         buttons = self.find_elements(By.CSS_SELECTOR, 'button[type="button"]')
-        for _ in range(num):
+        for _ in range(num[2]):
             buttons[9].click()
         select = self.find_elements(By.CSS_SELECTOR, 'select[name="age"]')
         for i in range(len(select)):
             select[i].click()
             sleep(1)
-            choose_age = self.find_elements(By.CSS_SELECTOR, f'option[value="{i + 1}"]')
+            choose_age = self.find_elements(By.CSS_SELECTOR, f'option[value="{num[i + 3]}"]')
             choose_age[i].click()
             sleep(1)
 
     def set_rooms(self, num):
         buttons = self.find_elements(By.CSS_SELECTOR, 'button[type="button"]')
-        for _ in range(num - 1):
+        for _ in range(int(num) - 1):
             buttons[11].click()
             sleep(.5)
 
@@ -142,28 +142,29 @@ class Booking(webdriver.Chrome):
         buttons[12].click()
 
     # 11
-    def list(self, adults, children, rooms):
+    def list(self, args):
         menu = self.find_element(By.CSS_SELECTOR, 'button[data-testid="occupancy-config"]')
         menu.click()
         sleep(2)
-        self.set_adults(num=adults)
-        self.set_children(num=children)
-        self.set_rooms(num=rooms)
+        self.set_adults(num=args[0])
+        self.set_children(args)
+        self.set_rooms(num=args[1])
         self.close_list()
 
     def submit(self):
         btn = self.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
         btn.click()
 
-    def apply_filtrations(self):
+    def apply_filtrations(self, stars):
         ob = Filters(self)
-        ob.star_rating(5)
+        ob.star_rating(values=stars)
         sleep(10)
         ob.lower_price_first()
 
     def get_data(self):
+        self.refresh()
         ob = Scrap(driver=self)
-        res_table,cnt = ob.get_values()
+        res_table, cnt = ob.get_values()
         table = PrettyTable(field_names=["index", "Hotel Name", "Price", "Score"])
         table.add_rows(res_table)
         print(f'{cnt} results')
