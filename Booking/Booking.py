@@ -1,4 +1,5 @@
 import Booking.constants as const
+from Booking.filtration import Filters
 from selenium import webdriver
 import os
 from selenium.webdriver.common.by import By
@@ -162,4 +163,10 @@ class Booking(webdriver.Chrome):
             print(_.get_attribute('data-date'))
         # check_in_element.click()
         print('done')
+
     #
+    def apply_filtrations(self):
+        ob = Filters(self)
+        ob.star_rating(0)
+        sleep(3)
+        ob.lower_price_first()
